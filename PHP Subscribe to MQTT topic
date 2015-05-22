@@ -1,0 +1,55 @@
+<?php
+
+require("../phpMQTT.php");
+
+echo "test";
+	
+$mqtt = new phpMQTT("127.0.0.1", 1883, "phpscript"); //Change client name to something unique
+
+if(!$mqtt->connect()){
+	exit(1);
+}
+
+#$topics['ferries/IOW/#'] = array("qos"=>0, "function"=>"procmsg");
+#$mqtt->subscribe($topics,0);
+
+while($mqtt->proc()){
+		
+}
+
+
+$mqtt->close();
+
+function procmsg($topic,$msg){
+		echo "Msg Recieved: ".date("r")."\nTopic:{$topic}\n$msg\n";
+}
+	
+$servername = "localhost";
+$username = "root";
+$password = "steven";
+$dbname = "servernfc";
+$nfcaccess = $topics['school/makerspace/nfcaccess/#'] = array("qos"=>0, "function"=>"procmsg");
+$nfcuser = $topics['school/makerspace/nfcuser/#'] = array("qos"=>0, "function"=>"procmsg");
+$nfcdate = $topics['school/makerspace/nfcdate/#'] = array("qos"=>0, "function"=>"procmsg");
+
+$mqtt->subscribe($topics,0);
+
+// Create connection
+$conn = new mysql($servername, $username, $password, $dbname);
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$sql = "INSERT INTO hello (access, user, userdate)
+VALUES ('$nfcaccess', '$nfcuser', '$nfcdate')";
+
+if ($conn->query($sql) === TRUE) {
+    echo "New record created successfully";
+} else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+$conn->close();
+
+?>
